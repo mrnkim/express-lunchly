@@ -15,12 +15,13 @@ class Customer {
     this.phone = phone;
     this.notes = notes;
   }
-
+/** return full and last name */
   fullName() {
     return `${this.firstName} ${this.lastName}`;
   }
 
   /** find all customers. */
+//TODO: maybe have all accept an argument
 
   static async all() {
     const results = await db.query(
@@ -96,17 +97,7 @@ class Customer {
    **/
 
   static async searchByName(name) {
-    let nameParts = name.split(" ");
-
-    nameParts[0] =
-      nameParts[0].charAt(0).toUpperCase() +
-      nameParts[0].substring(1).toLowerCase();
-
-    if (nameParts.length > 1) {
-      nameParts[1] =
-        nameParts[1].charAt(0).toUpperCase() +
-        nameParts[1].substring(1).toLowerCase();
-    }
+    //TODO: get all instances that include the inputed string
 
     let results = await db.query(
       `SELECT id,
@@ -115,9 +106,9 @@ class Customer {
                     phone,
                     notes
             FROM customers
-            WHERE (first_name = $1 OR last_name = $2) OR (first_name = $2 OR last_name = $1)
+            WHERE concat(first_name, ' ', last_name) ILIKE $1
             ORDER BY last_name, first_name`,
-      [nameParts[0], nameParts[1]]
+      [`%${name}%`]
     );
     return results.rows.map((c) => new Customer(c));
   }
@@ -133,9 +124,10 @@ class Customer {
                 c.first_name AS "firstName",
                 c.last_name AS "lastName",
                 c.phone,
-                c.notes,
+                c.notes
          FROM customers AS c
-         JOIN reservations AS r ON r.customer_id = c.id
+         JOIN reservations AS r
+         ON r.customer_id = c.id
          GROUP BY c.id
          ORDER BY COUNT(r.customer_id) DESC
          LIMIT 10;
