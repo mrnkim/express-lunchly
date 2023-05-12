@@ -13,6 +13,13 @@ const router = new express.Router();
 /** Homepage: show list of customers. */
 
 router.get("/", async function (req, res, next) {
+  //check to see if req.params.search, if so call a method to get customer(s)
+  //from DB (method should return an array with customer(s) object(s)).
+  if (req.query.search){
+    const results = await Customer.searchByName(req.query.search);
+    return res.render("customer_list.html", { results });
+  }
+
   const customers = await Customer.all();
   return res.render("customer_list.html", { customers });
 });

@@ -89,6 +89,31 @@ class Customer {
       );
     }
   }
+  /** recieves a string, breaks string into array sepearated by a white space.
+   * if leangth of array is 2, means we got a first and last name, search DB based on both.
+   * if length is 1, search DB based on first and last name on that single array value
+   * return error if nothing found, otherwise, return array of result customer object(s)
+   */
+  static async searchByName(name){
+    let nameParts = name.split(" ");
+    console.log("nameParts are...", nameParts );
+    //check based on 2 array lements (first and last)
+    if (nameParts.length === 2 ){
+      let results = await db.query(
+        `SELECT id,
+                    first_name AS "firstName",
+                    last_name  AS "lastName",
+                    phone,
+                    notes
+            FROM customers
+            WHERE first_name = $1, last_name = $2
+            ORDER BY last_name, first_name`, [nameParts[0], nameParts[1]]
+      );
+      console.log("results ARE>>>>>", results);
+      return results.rows.map((c) => new Customer(c));
+    }
+  }
 }
+
 
 module.exports = Customer;
