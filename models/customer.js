@@ -15,24 +15,29 @@ class Customer {
     this.phone = phone;
     this.notes = notes;
   }
-/** return full and last name */
-  fullName() {
+  /** return full and last name */
+  get fullName() {
     return `${this.firstName} ${this.lastName}`;
   }
 
   /** find all customers. */
-//TODO: maybe have all accept an argument
-
-  static async all() {
-    const results = await db.query(
+  static async all(name) {
+    if (!name) {
+      name = " ";
+    }
+    let results = await db.query(
       `SELECT id,
-                  first_name AS "firstName",
-                  last_name  AS "lastName",
-                  phone,
-                  notes
-           FROM customers
-           ORDER BY last_name, first_name`
+                    first_name AS "firstName",
+                    last_name  AS "lastName",
+                    phone,
+                    notes
+            FROM customers
+            WHERE concat(first_name, ' ', last_name) ILIKE $1
+            ORDER BY last_name, first_name`,
+      [`%${name}%`]
     );
+
+    console.log("results= ", results);
     return results.rows.map((c) => new Customer(c));
   }
 
@@ -89,28 +94,6 @@ class Customer {
         [this.firstName, this.lastName, this.phone, this.notes, this.id]
       );
     }
-  }
-  /** receives a string, breaks string into array separated by a white space.
-   * if length of array is greater than 1, means we got a first and last name.
-   * case-correct both first and last names and search them from db.
-   * returns an array with customer instances.
-   **/
-
-  static async searchByName(name) {
-    //TODO: get all instances that include the inputed string
-
-    let results = await db.query(
-      `SELECT id,
-                    first_name AS "firstName",
-                    last_name  AS "lastName",
-                    phone,
-                    notes
-            FROM customers
-            WHERE concat(first_name, ' ', last_name) ILIKE $1
-            ORDER BY last_name, first_name`,
-      [`%${name}%`]
-    );
-    return results.rows.map((c) => new Customer(c));
   }
 
   /**

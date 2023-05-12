@@ -7,7 +7,7 @@
   <h1>Customers</h1>
 
   <ul style="column-count: 4">
-    {% for customer in results %}
+    {% for customer in customers %}
       <li>
         <a href="/{{ customer.id }}/">
           {{ customer.fullName() }}

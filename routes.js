@@ -16,7 +16,7 @@ router.get("/", async function (req, res, next) {
   //check to see if req.params.search, if so call a method to get customer(s)
   //from DB (method should return an array with customer(s) object(s)).
   if (req.query.search) {
-    const customers = await Customer.searchByName(req.query.search);
+    const customers = await Customer.all(req.query.search);
     return res.render("customer_list.html", { customers });
   }
 
@@ -45,9 +45,9 @@ router.post("/add/", async function (req, res, next) {
 
 /** Show the top 10 customers ordered by most reservations */
 router.get("/top-ten/", async function (req, res, next) {
-  const results = await Customer.getBestCustomers();
+  const customers = await Customer.getBestCustomers();
 
-  return res.render("customer_list.html", { results });
+  return res.render("customer_list.html", { customers });
 });
 
 /** Show a customer, given their ID. */
