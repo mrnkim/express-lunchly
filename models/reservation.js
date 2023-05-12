@@ -39,11 +39,11 @@ class Reservation {
 
     return results.rows.map((row) => new Reservation(row));
   }
-
+/** save the res */
   async save() {
     if (this.id === undefined) {
       const result = await db.query(
-        `INSERT INTO reservations (customerId, numGuests, startAT, notes)
+        `INSERT INTO reservations (customer_id, num_guests, start_at, notes)
              VALUES ($1, $2, $3, $4)
              RETURNING id`,
         [this.customerId, this.numGuests, this.startAt, this.notes]
@@ -52,9 +52,9 @@ class Reservation {
     } else {
       await db.query(
         `UPDATE reservations
-             SET customerId=$1,
-                 numGuests=$2,
-                 startAt=$3,
+             SET customer_id=$1,
+                 num_guests=$2,
+                 start_at=$3,
                  notes=$4
              WHERE id = $5`,
         [this.customerId, this.numGuests, this.startAt, this.notes, this.id]
@@ -62,5 +62,5 @@ class Reservation {
     }
   }
 }
-
+//TODO: line 55 dont update customer id
 module.exports = Reservation;
