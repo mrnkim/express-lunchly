@@ -133,7 +133,7 @@ class Customer {
                 c.first_name AS "firstName",
                 c.last_name AS "lastName",
                 c.phone,
-                c.notes,
+                c.notes
          FROM customers AS c
          JOIN reservations AS r ON r.customer_id = c.id
          GROUP BY c.id
