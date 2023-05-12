@@ -89,31 +89,60 @@ class Customer {
       );
     }
   }
-  /** recieves a string, breaks string into array sepearated by a white space.
-   * if leangth of array is 2, means we got a first and last name, search DB based on both.
-   * if length is 1, search DB based on first and last name on that single array value
-   * return error if nothing found, otherwise, return array of result customer object(s)
-   */
-  static async searchByName(name){
+  /** receives a string, breaks string into array separated by a white space.
+   * if length of array is greater than 1, means we got a first and last name.
+   * case-correct both first and last names and search them from db.
+   * returns an array with customer instances.
+   **/
+
+  static async searchByName(name) {
     let nameParts = name.split(" ");
-    console.log("nameParts are...", nameParts );
-    //check based on 2 array lements (first and last)
-    if (nameParts.length === 2 ){
-      let results = await db.query(
-        `SELECT id,
+
+    nameParts[0] =
+      nameParts[0].charAt(0).toUpperCase() +
+      nameParts[0].substring(1).toLowerCase();
+
+    if (nameParts.length > 1) {
+      nameParts[1] =
+        nameParts[1].charAt(0).toUpperCase() +
+        nameParts[1].substring(1).toLowerCase();
+    }
+
+    let results = await db.query(
+      `SELECT id,
                     first_name AS "firstName",
                     last_name  AS "lastName",
                     phone,
                     notes
             FROM customers
-            WHERE first_name = $1, last_name = $2
-            ORDER BY last_name, first_name`, [nameParts[0], nameParts[1]]
-      );
-      console.log("results ARE>>>>>", results);
-      return results.rows.map((c) => new Customer(c));
-    }
+            WHERE (first_name = $1 OR last_name = $2) OR (first_name = $2 OR last_name = $1)
+            ORDER BY last_name, first_name`,
+      [nameParts[0], nameParts[1]]
+    );
+    return results.rows.map((c) => new Customer(c));
+  }
+
+  /**
+   * search top ten customers with the most reservations and returns an array
+   * of those customer instances.
+   */
+
+  static async getBestCustomers() {
+    const results = await db.query(
+      `SELECT c.id,
+                c.first_name AS "firstName",
+                c.last_name AS "lastName",
+                c.phone,
+                c.notes,
+         FROM customers AS c
+         JOIN reservations AS r ON r.customer_id = c.id
+         GROUP BY c.id
+         ORDER BY COUNT(r.customer_id) DESC
+         LIMIT 10;
+         `
+    );
+    return results.rows.map((c) => new Customer(c));
   }
 }
-
 
 module.exports = Customer;
